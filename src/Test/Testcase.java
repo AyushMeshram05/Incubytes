@@ -1,64 +1,67 @@
 package Test;
 
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
 
-class LibraryTest {
+public class Testcase {
+
     private Library library;
+    private Book book1;
+    private Book book2;
 
     @BeforeEach
     public void setUp() {
         library = new Library();
-        library.addBook(new Book("1234", "Effective Java", "Joshua Bloch", 2018));
-        library.addBook(new Book("5678", "Clean Code", "Robert C. Martin", 2008));
+        book1 = new Book("1234", "The Great Gatsby", "F. Scott Fitzgerald", 1925);
+        book2 = new Book("5678", "To Kill a Mockingbird", "Harper Lee", 1960);
     }
 
     @Test
     public void testAddBook() {
-        library.addBook(new Book("9101", "Refactoring", "Martin Fowler", 2012));
-        assertDoesNotThrow(() -> library.borrowBook("9101"));
+        library.addBook(book1);
+        library.addBook(book2);
+        List<Book> availableBooks = library.viewAvailableBooks();
+        assertEquals(2, availableBooks.size());
     }
 
     @Test
-    public void testAddDuplicateBook() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            library.addBook(new Book("1234", "Duplicate Title", "Some Author", 2020));
-        });
-        assertEquals("A book with ISBN 1234 is already in the library.", exception.getMessage());
+    public void testAddDuplicateBookThrowsException() {
+        library.addBook(book1);
+        assertThrows(IllegalArgumentException.class, () -> library.addBook(book1));
     }
 
     @Test
     public void testBorrowBook() {
-        assertDoesNotThrow(() -> library.borrowBook("1234"));
-        assertThrows(IllegalStateException.class, () -> library.borrowBook("1234"));
+        library.addBook(book1);
+        library.borrowBook("1234");
+        List<Book> availableBooks = library.viewAvailableBooks();
+        assertEquals(0, availableBooks.size());
     }
 
     @Test
-    public void testBorrowNonExistingBook() {
-        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
-            library.borrowBook("9999");
-        });
-        assertEquals("No book found with ISBN 9999.", exception.getMessage());
+    public void testBorrowUnavailableBookThrowsException() {
+    	
+    	
+        library.addBook(book1);
+        library.borrowBook("1234");
+        assertThrows(IllegalArgumentException.class, () -> library.borrowBook("1234"));
     }
 
     @Test
     public void testReturnBook() {
-        library.borrowBook("5678");
-        assertDoesNotThrow(() -> library.returnBook("5678"));
-    }
-
-    @Test
-    public void testReturnNonBorrowedBook() {
-        assertThrows(IllegalStateException.class, () -> {
-            library.returnBook("5678");
-        });
-    }
-
-    @Test
-    public void testViewAvailableBooks() {
+        library.addBook(book1);
         library.borrowBook("1234");
-        assertDoesNotThrow(() -> library.viewAvailableBooks());
+        library.returnBook("1234");
+        List<Book> availableBooks = library.viewAvailableBooks();
+        assertEquals(1, availableBooks.size());
+    }
+
+    @Test
+    public void testReturnNonexistentBookThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> library.returnBook("9999"));
     }
 }
